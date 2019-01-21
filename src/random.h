@@ -1,17 +1,16 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RANDOM_H
-#define BITCOIN_RANDOM_H
+#ifndef DIETBITCOIN_RANDOM_H
+#define DIETBITCOIN_RANDOM_H
 
-#include <crypto/chacha20.h>
-#include <crypto/common.h>
-#include <uint256.h>
+#include "crypto/chacha20.h"
+#include "crypto/common.h"
+#include "uint256.h"
 
 #include <stdint.h>
-#include <limits>
 
 /* Seed OpenSSL PRNG with additional entropy data */
 void RandAddSeed();
@@ -33,7 +32,7 @@ void RandAddSeedSleep();
 
 /**
  * Function to gather random data from multiple sources, failing whenever any
- * of those sources fail to provide a result.
+ * of those source fail to provide a result.
  */
 void GetStrongRandBytes(unsigned char* buf, int num);
 
@@ -42,7 +41,8 @@ void GetStrongRandBytes(unsigned char* buf, int num);
  * is completely deterministic and insecure after that.
  * This class is not thread-safe.
  */
-class FastRandomContext {
+class FastRandomContext
+{
 private:
     bool requires_seed;
     ChaCha20 rng;
@@ -76,14 +76,6 @@ public:
     /** Initialize with explicit seed (only for testing) */
     explicit FastRandomContext(const uint256& seed);
 
-    // Do not permit copying a FastRandomContext (move it, or create a new one to get reseeded).
-    FastRandomContext(const FastRandomContext&) = delete;
-    FastRandomContext(FastRandomContext&&) = delete;
-    FastRandomContext& operator=(const FastRandomContext&) = delete;
-
-    /** Move a FastRandomContext. If the original one is used again, it will be reseeded. */
-    FastRandomContext& operator=(FastRandomContext&& from) noexcept;
-
     /** Generate a random 64-bit integer. */
     uint64_t rand64()
     {
@@ -94,7 +86,8 @@ public:
     }
 
     /** Generate a random (bits)-bit integer. */
-    uint64_t randbits(int bits) {
+    uint64_t randbits(int bits)
+    {
         if (bits == 0) {
             return 0;
         } else if (bits > 32) {
@@ -130,48 +123,19 @@ public:
 
     /** Generate a random boolean. */
     bool randbool() { return randbits(1); }
-
-    // Compatibility with the C++11 UniformRandomBitGenerator concept
-    typedef uint64_t result_type;
-    static constexpr uint64_t min() { return 0; }
-    static constexpr uint64_t max() { return std::numeric_limits<uint64_t>::max(); }
-    inline uint64_t operator()() { return rand64(); }
 };
-
-/** More efficient than using std::shuffle on a FastRandomContext.
- *
- * This is more efficient as std::shuffle will consume entropy in groups of
- * 64 bits at the time and throw away most.
- *
- * This also works around a bug in libstdc++ std::shuffle that may cause
- * type::operator=(type&&) to be invoked on itself, which the library's
- * debug mode detects and panics on. This is a known issue, see
- * https://stackoverflow.com/questions/22915325/avoiding-self-assignment-in-stdshuffle
- */
-template<typename I, typename R>
-void Shuffle(I first, I last, R&& rng)
-{
-    while (first != last) {
-        size_t j = rng.randrange(last - first);
-        if (j) {
-            using std::swap;
-            swap(*first, *(first + j));
-        }
-        ++first;
-    }
-}
 
 /* Number of random bytes returned by GetOSRand.
  * When changing this constant make sure to change all call sites, and make
  * sure that the underlying OS APIs for all platforms support the number.
  * (many cap out at 256 bytes).
  */
-static const int NUM_OS_RANDOM_BYTES = 32;
+static const ssize_t NUM_OS_RANDOM_BYTES = 32;
 
 /** Get 32 bytes of system entropy. Do not use this in application code: use
  * GetStrongRandBytes instead.
  */
-void GetOSRand(unsigned char *ent32);
+void GetOSRand(unsigned char* ent32);
 
 /** Check that OS randomness is available and returning the requested number
  * of bytes.
@@ -181,4 +145,4 @@ bool Random_SanityCheck();
 /** Initialize the RNG. */
 void RandomInit();
 
-#endif // BITCOIN_RANDOM_H
+#endif // DIETBITCOIN_RANDOM_H

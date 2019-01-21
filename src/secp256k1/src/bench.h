@@ -4,20 +4,22 @@
  * file COPYING or http://www.opensource.org/licenses/mit-license.php.*
  **********************************************************************/
 
-#ifndef SECP256K1_BENCH_H
-#define SECP256K1_BENCH_H
+#ifndef _SECP256K1_BENCH_H_
+#define _SECP256K1_BENCH_H_
 
-#include <stdio.h>
-#include <math.h>
 #include "sys/time.h"
+#include <math.h>
+#include <stdio.h>
 
-static double gettimedouble(void) {
+static double gettimedouble(void)
+{
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_usec * 0.000001 + tv.tv_sec;
 }
 
-void print_number(double x) {
+void print_number(double x)
+{
     double y = x;
     int c = 0;
     if (y < 0.0) {
@@ -30,7 +32,8 @@ void print_number(double x) {
     printf("%.*f", c, x);
 }
 
-void run_benchmark(char *name, void (*benchmark)(void*), void (*setup)(void*), void (*teardown)(void*), void* data, int count, int iter) {
+void run_benchmark(char* name, void (*benchmark)(void*), void (*setup)(void*), void (*teardown)(void*), void* data, int count, int iter)
+{
     int i;
     double min = HUGE_VAL;
     double sum = 0.0;
@@ -63,4 +66,4 @@ void run_benchmark(char *name, void (*benchmark)(void*), void (*setup)(void*), v
     printf("us\n");
 }
 
-#endif /* SECP256K1_BENCH_H */
+#endif

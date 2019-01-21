@@ -1,21 +1,18 @@
-// Copyright (c) 2011-2018 The Bitcoin Core developers
+// Copyright (c) 2011-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_UTILITYDIALOG_H
-#define BITCOIN_QT_UTILITYDIALOG_H
+#ifndef DIETBITCOIN_QT_UTILITYDIALOG_H
+#define DIETBITCOIN_QT_UTILITYDIALOG_H
 
 #include <QDialog>
 #include <QObject>
 
-class BitcoinGUI;
+class DietBitcoinGUI;
 
-namespace interfaces {
-    class Node;
-}
-
-namespace Ui {
-    class HelpMessageDialog;
+namespace Ui
+{
+class HelpMessageDialog;
 }
 
 /** "Help message" dialog box */
@@ -24,14 +21,14 @@ class HelpMessageDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit HelpMessageDialog(interfaces::Node& node, QWidget *parent, bool about);
+    explicit HelpMessageDialog(QWidget* parent, bool about);
     ~HelpMessageDialog();
 
     void printToConsole();
     void showOrPrint();
 
 private:
-    Ui::HelpMessageDialog *ui;
+    Ui::HelpMessageDialog* ui;
     QString text;
 
 private Q_SLOTS:
@@ -45,11 +42,11 @@ class ShutdownWindow : public QWidget
     Q_OBJECT
 
 public:
-    explicit ShutdownWindow(QWidget *parent=nullptr, Qt::WindowFlags f=Qt::Widget);
-    static QWidget *showShutdownWindow(BitcoinGUI *window);
+    ShutdownWindow(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    static QWidget* showShutdownWindow(DietBitcoinGUI* window);
 
 protected:
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent* event);
 };
 
-#endif // BITCOIN_QT_UTILITYDIALOG_H
+#endif // DIETBITCOIN_QT_UTILITYDIALOG_H

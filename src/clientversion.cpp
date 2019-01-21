@@ -1,18 +1,21 @@
-// Copyright (c) 2012-2018 The Bitcoin Core developers
+// Copyright (c) 2012-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <clientversion.h>
+#include "clientversion.h"
 
-#include <tinyformat.h>
+#include "tinyformat.h"
+
+#include <string>
+
 
 
 /**
  * Name of client reported in the 'version' message. Report the same name
- * for both bitcoind and bitcoin-qt, to make it harder for attackers to
+ * for both dietbitcoind and dietbitcoin-core, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("Satoshi");
+const std::string CLIENT_NAME("DietBitcoin");
 
 /**
  * Client version number
@@ -38,14 +41,13 @@ const std::string CLIENT_NAME("Satoshi");
 
 //! First, include build.h if requested
 #ifdef HAVE_BUILD_INFO
-#include <obj/build.h>
+#include "build.h"
 #endif
 
-//! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
-#define GIT_ARCHIVE 1
+//! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. $Format:%n#define GIT_ARCHIVE 1$
 #ifdef GIT_ARCHIVE
-#define GIT_COMMIT_ID "391a27376b30492f55b398fc220ee96cf3769a32"
-#define GIT_COMMIT_DATE "Tue, 15 Jan 2019 16:05:50 -0500"
+#define GIT_COMMIT_ID "$Format:%h$"
+#define GIT_COMMIT_DATE "$Format:%cD$"
 #endif
 
 #define BUILD_DESC_WITH_SUFFIX(maj, min, rev, build, suffix) \
@@ -82,19 +84,18 @@ std::string FormatFullVersion()
     return CLIENT_BUILD;
 }
 
-/**
- * Format the subversion field according to BIP 14 spec (https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki)
+/** 
+ * Format the subversion field according to BIP 14 spec (https://github.com/dietbitcoin/bips/blob/master/bip-0014.mediawiki) 
  */
 std::string FormatSubVersion(const std::string& name, int nClientVersion, const std::vector<std::string>& comments)
 {
     std::ostringstream ss;
     ss << "/";
     ss << name << ":" << FormatVersion(nClientVersion);
-    if (!comments.empty())
-    {
+    if (!comments.empty()) {
         std::vector<std::string>::const_iterator it(comments.begin());
         ss << "(" << *it;
-        for(++it; it != comments.end(); ++it)
+        for (++it; it != comments.end(); ++it)
             ss << "; " << *it;
         ss << ")";
     }

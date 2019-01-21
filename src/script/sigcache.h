@@ -1,12 +1,12 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SIGCACHE_H
-#define BITCOIN_SCRIPT_SIGCACHE_H
+#ifndef DIETBITCOIN_SCRIPT_SIGCACHE_H
+#define DIETBITCOIN_SCRIPT_SIGCACHE_H
 
-#include <script/interpreter.h>
+#include "script/interpreter.h"
 
 #include <vector>
 
@@ -33,9 +33,9 @@ public:
     template <uint8_t hash_select>
     uint32_t operator()(const uint256& key) const
     {
-        static_assert(hash_select <8, "SignatureCacheHasher only has 8 hashes available.");
+        static_assert(hash_select < 8, "SignatureCacheHasher only has 8 hashes available.");
         uint32_t u;
-        std::memcpy(&u, key.begin()+4*hash_select, 4);
+        std::memcpy(&u, key.begin() + 4 * hash_select, 4);
         return u;
     }
 };
@@ -53,4 +53,4 @@ public:
 
 void InitSignatureCache();
 
-#endif // BITCOIN_SCRIPT_SIGCACHE_H
+#endif // DIETBITCOIN_SCRIPT_SIGCACHE_H

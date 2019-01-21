@@ -1,14 +1,14 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_SERVER_H
-#define BITCOIN_RPC_SERVER_H
+#ifndef DIETBITCOIN_RPCSERVER_H
+#define DIETBITCOIN_RPCSERVER_H
 
-#include <amount.h>
-#include <rpc/protocol.h>
-#include <uint256.h>
+#include "amount.h"
+#include "rpc/protocol.h"
+#include "uint256.h"
 
 #include <list>
 #include <map>
@@ -23,12 +23,13 @@ class CRPCCommand;
 
 namespace RPCServer
 {
-    void OnStarted(std::function<void ()> slot);
-    void OnStopped(std::function<void ()> slot);
+void OnStarted(std::function<void()> slot);
+void OnStopped(std::function<void()> slot);
+void OnPreCommand(std::function<void(const CRPCCommand&)> slot);
 }
 
 /** Wrapper for UniValue::VType, which includes typeAny:
- * Used to denote don't care type. */
+ * Used to denote don't care type. Only used by RPCTypeCheckObj */
 struct UniValueType {
     UniValueType(UniValue::VType _type) : typeAny(false), type(_type) {}
     UniValueType() : typeAny(true) {}
@@ -45,7 +46,6 @@ public:
     bool fHelp;
     std::string URI;
     std::string authUser;
-    std::string peerAddr;
 
     JSONRPCRequest() : id(NullUniValue), params(NullUniValue), fHelp(false) {}
     void parse(const UniValue& valRequest);
@@ -63,19 +63,20 @@ void SetRPCWarmupStatus(const std::string& newStatus);
 void SetRPCWarmupFinished();
 
 /* returns the current warmup state.  */
-bool RPCIsInWarmup(std::string *outStatus);
+bool RPCIsInWarmup(std::string* outStatus);
 
 /**
  * Type-check arguments; throws JSONRPCError if wrong type given. Does not check that
  * the right number of arguments are passed, just that any passed are the correct type.
  */
 void RPCTypeCheck(const UniValue& params,
-                  const std::list<UniValueType>& typesExpected, bool fAllowNull=false);
+    const std::list<UniValue::VType>& typesExpected,
+    bool fAllowNull = false);
 
 /**
  * Type-check one argument; throws JSONRPCError if wrong type given.
  */
-void RPCTypeCheckArgument(const UniValue& value, const UniValueType& typeExpected);
+void RPCTypeCheckArgument(const UniValue& value, UniValue::VType typeExpected);
 
 /*
   Check for expected keys/value types in an Object.
@@ -103,30 +104,30 @@ class RPCTimerInterface
 public:
     virtual ~RPCTimerInterface() {}
     /** Implementation name */
-    virtual const char *Name() = 0;
+    virtual const char* Name() = 0;
     /** Factory function for timers.
      * RPC will call the function to create a timer that will call func in *millis* milliseconds.
      * @note As the RPC mechanism is backend-neutral, it can use different implementations of timers.
      * This is needed to cope with the case in which there is no HTTP server, but
      * only GUI RPC console, and to break the dependency of pcserver on httprpc.
      */
-    virtual RPCTimerBase* NewTimer(std::function<void()>& func, int64_t millis) = 0;
+    virtual RPCTimerBase* NewTimer(std::function<void(void)>& func, int64_t millis) = 0;
 };
 
 /** Set the factory function for timers */
-void RPCSetTimerInterface(RPCTimerInterface *iface);
+void RPCSetTimerInterface(RPCTimerInterface* iface);
 /** Set the factory function for timer, but only, if unset */
-void RPCSetTimerInterfaceIfUnset(RPCTimerInterface *iface);
+void RPCSetTimerInterfaceIfUnset(RPCTimerInterface* iface);
 /** Unset factory function for timers */
-void RPCUnsetTimerInterface(RPCTimerInterface *iface);
+void RPCUnsetTimerInterface(RPCTimerInterface* iface);
 
 /**
  * Run func nSeconds from now.
  * Overrides previous timer <name> (if any).
  */
-void RPCRunLater(const std::string& name, std::function<void()> func, int64_t nSeconds);
+void RPCRunLater(const std::string& name, std::function<void(void)> func, int64_t nSeconds);
 
-typedef UniValue(*rpcfn_type)(const JSONRPCRequest& jsonRequest);
+typedef UniValue (*rpcfn_type)(const JSONRPCRequest& jsonRequest);
 
 class CRPCCommand
 {
@@ -134,16 +135,18 @@ public:
     std::string category;
     std::string name;
     rpcfn_type actor;
+    bool okSafeMode;
     std::vector<std::string> argNames;
 };
 
 /**
- * Bitcoin RPC command dispatcher.
+ * DietBitcoin RPC command dispatcher.
  */
 class CRPCTable
 {
 private:
     std::map<std::string, const CRPCCommand*> mapCommands;
+
 public:
     CRPCTable();
     const CRPCCommand* operator[](const std::string& name) const;
@@ -155,7 +158,7 @@ public:
      * @returns Result of the call.
      * @throws an exception (UniValue) when an error happens.
      */
-    UniValue execute(const JSONRPCRequest &request) const;
+    UniValue execute(const JSONRPCRequest& request) const;
 
     /**
     * Returns a list of registered commands
@@ -166,22 +169,11 @@ public:
 
     /**
      * Appends a CRPCCommand to the dispatch table.
-     *
      * Returns false if RPC server is already running (dump concurrency protection).
-     *
      * Commands cannot be overwritten (returns false).
-     *
-     * Commands with different method names but the same callback function will
-     * be considered aliases, and only the first registered method name will
-     * show up in the help text command listing. Aliased commands do not have
-     * to have the same behavior. Server and client code can distinguish
-     * between calls based on method name, and aliased commands can also
-     * register different names, types, and numbers of parameters.
      */
     bool appendCommand(const std::string& name, const CRPCCommand* pcmd);
 };
-
-bool IsDeprecatedRPCEnabled(const std::string& method);
 
 extern CRPCTable tableRPC;
 
@@ -198,12 +190,12 @@ extern CAmount AmountFromValue(const UniValue& value);
 extern std::string HelpExampleCli(const std::string& methodname, const std::string& args);
 extern std::string HelpExampleRpc(const std::string& methodname, const std::string& args);
 
-void StartRPC();
+bool StartRPC();
 void InterruptRPC();
 void StopRPC();
-std::string JSONRPCExecBatch(const JSONRPCRequest& jreq, const UniValue& vReq);
+std::string JSONRPCExecBatch(const UniValue& vReq);
 
 // Retrieves any serialization flags requested in command line argument
 int RPCSerializationFlags();
 
-#endif // BITCOIN_RPC_SERVER_H
+#endif // DIETBITCOIN_RPCSERVER_H

@@ -1,11 +1,11 @@
-// Copyright (c) 2012-2018 The Bitcoin Core developers
+// Copyright (c) 2012-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOOM_H
-#define BITCOIN_BLOOM_H
+#ifndef DIETBITCOIN_BLOOM_H
+#define DIETBITCOIN_BLOOM_H
 
-#include <serialize.h>
+#include "serialize.h"
 
 #include <vector>
 
@@ -21,8 +21,7 @@ static const unsigned int MAX_HASH_FUNCS = 50;
  * First two bits of nFlags control how much IsRelevantAndUpdate actually updates
  * The remaining bits are reserved
  */
-enum bloomflags
-{
+enum bloomflags {
     BLOOM_UPDATE_NONE = 0,
     BLOOM_UPDATE_ALL = 1,
     // Only adds outpoints to the filter if the output is a pay-to-pubkey/pay-to-multisig script
@@ -33,9 +32,9 @@ enum bloomflags
 /**
  * BloomFilter is a probabilistic filter which SPV clients provide
  * so that we can filter the transactions we send them.
- *
+ * 
  * This allows for significantly more efficient transaction and block downloads.
- *
+ * 
  * Because bloom filters are probabilistic, a SPV node can increase the false-
  * positive rate, making us send it transactions which aren't actually its,
  * allowing clients to trade more bandwidth for more privacy by obfuscating which
@@ -53,6 +52,10 @@ private:
 
     unsigned int Hash(unsigned int nHashNum, const std::vector<unsigned char>& vDataToHash) const;
 
+    // Private constructor for CRollingBloomFilter, no restrictions on size
+    CBloomFilter(const unsigned int nElements, const double nFPRate, const unsigned int nTweak);
+    friend class CRollingBloomFilter;
+
 public:
     /**
      * Creates a new bloom filter which will provide the given fp rate when filled with the given number of elements
@@ -69,7 +72,8 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
         READWRITE(vData);
         READWRITE(nHashFuncs);
         READWRITE(nTweak);
@@ -136,4 +140,4 @@ private:
     int nHashFuncs;
 };
 
-#endif // BITCOIN_BLOOM_H
+#endif // DIETBITCOIN_BLOOM_H

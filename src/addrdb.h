@@ -1,32 +1,31 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2009-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ADDRDB_H
-#define BITCOIN_ADDRDB_H
+#ifndef DIETBITCOIN_ADDRDB_H
+#define DIETBITCOIN_ADDRDB_H
 
-#include <fs.h>
-#include <serialize.h>
+#include "fs.h"
+#include "serialize.h"
 
-#include <string>
 #include <map>
+#include <string>
 
 class CSubNet;
 class CAddrMan;
 class CDataStream;
 
-typedef enum BanReason
-{
-    BanReasonUnknown          = 0,
-    BanReasonNodeMisbehaving  = 1,
-    BanReasonManuallyAdded    = 2
+typedef enum BanReason {
+    BanReasonUnknown = 0,
+    BanReasonNodeMisbehaving = 1,
+    BanReasonManuallyAdded = 2
 } BanReason;
 
 class CBanEntry
 {
 public:
-    static const int CURRENT_VERSION=1;
+    static const int CURRENT_VERSION = 1;
     int nVersion;
     int64_t nCreateTime;
     int64_t nBanUntil;
@@ -37,7 +36,7 @@ public:
         SetNull();
     }
 
-    explicit CBanEntry(int64_t nCreateTimeIn)
+    CBanEntry(int64_t nCreateTimeIn)
     {
         SetNull();
         nCreateTime = nCreateTimeIn;
@@ -46,7 +45,8 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
         READWRITE(this->nVersion);
         READWRITE(nCreateTime);
         READWRITE(nBanUntil);
@@ -61,7 +61,7 @@ public:
         banReason = BanReasonUnknown;
     }
 
-    std::string banReasonToString() const
+    std::string banReasonToString()
     {
         switch (banReason) {
         case BanReasonNodeMisbehaving:
@@ -81,6 +81,7 @@ class CAddrDB
 {
 private:
     fs::path pathAddr;
+
 public:
     CAddrDB();
     bool Write(const CAddrMan& addr);
@@ -93,10 +94,11 @@ class CBanDB
 {
 private:
     fs::path pathBanlist;
+
 public:
     CBanDB();
     bool Write(const banmap_t& banSet);
     bool Read(banmap_t& banSet);
 };
 
-#endif // BITCOIN_ADDRDB_H
+#endif // DIETBITCOIN_ADDRDB_H

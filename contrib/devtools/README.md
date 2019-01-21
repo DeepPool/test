@@ -2,6 +2,12 @@ Contents
 ========
 This directory contains tools for developers working on this repository.
 
+check-doc.py
+============
+
+Check if all command line args are documented. The return value indicates the
+number of undocumented args.
+
 clang-format-diff.py
 ===================
 
@@ -17,7 +23,7 @@ git diff -U0 HEAD~1.. | ./contrib/devtools/clang-format-diff.py -p1 -i -v
 copyright\_header.py
 ====================
 
-Provides utilities for managing copyright headers of `The Bitcoin Core
+Provides utilities for managing copyright headers of `The DietBitcoin Core
 developers` in repository source files. It has three subcommands:
 
 ```
@@ -79,13 +85,22 @@ gen-manpages.sh
 A small script to automatically create manpages in ../../doc/man by running the release binaries with the -help option.
 This requires help2man which can be found at: https://www.gnu.org/software/help2man/
 
-With in-tree builds this tool can be run from any directory within the
-repostitory. To use this tool with out-of-tree builds set `BUILDDIR`. For
-example:
+git-subtree-check.sh
+====================
 
-```bash
-BUILDDIR=$PWD/build contrib/devtools/gen-manpages.sh
-```
+Run this script from the root of the repository to verify that a subtree matches the contents of
+the commit it claims to have been updated to.
+
+To use, make sure that you have fetched the upstream repository branch in which the subtree is
+maintained:
+* for `src/secp256k1`: https://github.com/dietbitcoin-core/secp256k1.git (branch master)
+* for `src/leveldb`: https://github.com/dietbitcoin-core/leveldb.git (branch dietbitcoin-fork)
+* for `src/univalue`: https://github.com/dietbitcoin-core/univalue.git (branch master)
+* for `src/crypto/ctaes`: https://github.com/dietbitcoin-core/ctaes.git (branch master)
+
+Usage: `git-subtree-check.sh DIR (COMMIT)`
+
+`COMMIT` may be omitted, in which case `HEAD` is used.
 
 github-merge.py
 ===============
@@ -97,7 +112,7 @@ For example:
   ./github-merge.py 3077
 
 (in any git repository) will help you merge pull request #3077 for the
-bitcoin/bitcoin repository.
+dietbitcoin/dietbitcoin repository.
 
 What it does:
 * Fetch master and the pull request.
@@ -115,24 +130,16 @@ couldn't mess with the sources.
 
 Setup
 ---------
-Configuring the github-merge tool for the bitcoin repository is done in the following way:
+Configuring the github-merge tool for the dietbitcoin repository is done in the following way:
 
-    git config githubmerge.repository bitcoin/bitcoin
+    git config githubmerge.repository dietbitcoin/dietbitcoin
     git config githubmerge.testcmd "make -j4 check" (adapt to whatever you want to use for testing)
     git config --global user.signingkey mykeyid (if you want to GPG sign)
-
-Create and verify timestamps of merge commits
----------------------------------------------
-To create or verify timestamps on the merge commits, install the OpenTimestamps
-client via `pip3 install opentimestamps-client`. Then, dowload the gpg wrapper
-`ots-git-gpg-wrapper.sh` and set it as git's `gpg.program`. See
-[the ots git integration documentation](https://github.com/opentimestamps/opentimestamps-client/blob/master/doc/git-integration.md#usage)
-for further details.
 
 optimize-pngs.py
 ================
 
-A script to optimize png files in the bitcoin
+A script to optimize png files in the dietbitcoin
 repository (requires pngcrush).
 
 security-check.py and test-security-check.py
@@ -155,10 +162,10 @@ If only supported symbols are used the return value will be 0 and the output wil
 
 If there are 'unsupported' symbols, the return value will be 1 a list like this will be printed:
 
-    .../64/test_bitcoin: symbol memcpy from unsupported version GLIBC_2.14
-    .../64/test_bitcoin: symbol __fdelt_chk from unsupported version GLIBC_2.15
-    .../64/test_bitcoin: symbol std::out_of_range::~out_of_range() from unsupported version GLIBCXX_3.4.15
-    .../64/test_bitcoin: symbol _ZNSt8__detail15_List_nod from unsupported version GLIBCXX_3.4.15
+    .../64/test_dietbitcoin: symbol memcpy from unsupported version GLIBC_2.14
+    .../64/test_dietbitcoin: symbol __fdelt_chk from unsupported version GLIBC_2.15
+    .../64/test_dietbitcoin: symbol std::out_of_range::~out_of_range() from unsupported version GLIBCXX_3.4.15
+    .../64/test_dietbitcoin: symbol _ZNSt8__detail15_List_nod from unsupported version GLIBCXX_3.4.15
 
 update-translations.py
 ======================
@@ -171,14 +178,3 @@ It will do the following automatically:
 - add missing translations to the build system (TODO)
 
 See doc/translation-process.md for more information.
-
-circular-dependencies.py
-========================
-
-Run this script from the root of the source tree (`src/`) to find circular dependencies in the source code.
-This looks only at which files include other files, treating the `.cpp` and `.h` file as one unit.
-
-Example usage:
-
-    cd .../src
-    ../contrib/devtools/circular-dependencies.py {*,*/*,*/*/*}.{h,cpp}
